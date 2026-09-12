@@ -12,6 +12,9 @@ accompanistSystemuicontroller = "0.36.0"
 coreSplashscreen = "1.0.1"
 room = "2.6.1"
 ksp = "2.2.10-2.0.2"
+hiltNavigationCompose = "1.4.0"
+hilt = "2.60.1"
+zxing = "3.5.4"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -39,6 +42,14 @@ androidx-room-testing = { module = "androidx.room:room-testing", version.ref = "
 androidx-room-rxjava3 = { module = "androidx.room:room-rxjava3", version.ref = "room" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 
+#Dagger
+hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hilt" }
+hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hilt" }
+androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
+
+# Google zxing
+zxing = { module = "com.google.zxing:core", version.ref = "zxing" }
+
 [bundles]
 room = [
     "androidx-room-paging",
@@ -51,4 +62,4 @@ room = [
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
-
+hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
