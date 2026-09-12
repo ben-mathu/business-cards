@@ -16,11 +16,21 @@
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.BusinessCards"
+            android:launchMode="singleTask"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <!-- Receive shared .vcf files (via Share sheet) -->
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="text/vcard" />
+                <data android:mimeType="text/x-vcard" />
+                <data android:mimeType="text/directory" />
             </intent-filter>
         </activity>
     </application>
