@@ -63,7 +63,7 @@ class ContactCardsViewModel @Inject constructor(
         }
     }
 
-    fun deleteCard(cardId: String) {
+    fun deleteCard(cardId: Long) {
         viewModelScope.launch {
             vCardDao.deleteCardById(cardId)
         }
@@ -72,6 +72,7 @@ class ContactCardsViewModel @Inject constructor(
     fun addSampleCard() {
         viewModelScope.launch {
             val sampleCard = VCardDto(
+                id = 0,
                 uid = UUID.randomUUID().toString(),
                 formattedName = "Alex Rivera",
                 name = VCardNameDto(

@@ -50,6 +50,8 @@ androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-com
 # Google zxing
 zxing = { module = "com.google.zxing:core", version.ref = "zxing" }
 
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.6.3" }
+
 [bundles]
 room = [
     "androidx-room-paging",
@@ -63,3 +65,4 @@ android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 hilt = { id = "com.google.dagger.hilt.android", version.ref = "hilt" }
+kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }

@@ -180,7 +180,8 @@ object VCardParser {
         }
 
         return VCardDto(
-            uid = uid ?: UUID.randomUUID().toString(),
+            id = null,
+            uid = uid,
             version = version,
             formattedName = formattedName,
             name = name,

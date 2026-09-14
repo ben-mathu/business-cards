@@ -6,15 +6,22 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.benatt.businesscards.ui.cards.ContactCardsScreen
 import com.benatt.businesscards.ui.cards.ContactCardsViewModel
+import com.benatt.businesscards.ui.editcontact.EditCardScreen
 import com.benatt.businesscards.ui.theme.BusinessCardsTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.serialization.Serializable
+
+@Serializable
+object HomeScreenRoute
+
+@Serializable
+data class EditCardRoute(val cardId: Long)
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -29,12 +36,24 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
         setContent {
+            val navController = rememberNavController()
+
             BusinessCardsTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    ContactCardsScreen(
-                        modifier = Modifier.padding(innerPadding),
-                        viewModel = viewModel
-                    )
+                NavHost(navController = navController, startDestination = HomeScreenRoute) {
+                    composable<HomeScreenRoute> {
+                        ContactCardsScreen(
+                            viewModel = viewModel,
+                            onNavigateToEdit = { cardId ->
+                                navController.navigate(EditCardRoute(cardId = cardId))
+                            }
+                        )
+                    }
+
+                    composable<EditCardRoute> {
+                        EditCardScreen(
+                            onNavigateBack = { navController.popBackStack() }
+                        )
+                    }
                 }
             }
         }

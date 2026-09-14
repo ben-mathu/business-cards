@@ -30,7 +30,7 @@ class VCardEntityMappingTest {
 
         val entity = VCardEntity.fromDto(dto, rawVcf = "RAW_VCF_SAMPLE")
 
-        assertEquals("card-123", entity.id)
+        assertEquals("card-123", entity.uid)
         assertEquals("Morgan Lee", entity.formattedName)
         assertEquals("+1999888777", entity.primaryPhone)
         assertEquals("morgan@example.org", entity.primaryEmail)

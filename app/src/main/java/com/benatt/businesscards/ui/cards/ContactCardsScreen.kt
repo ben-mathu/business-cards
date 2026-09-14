@@ -8,12 +8,10 @@ import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
@@ -21,8 +19,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,10 +28,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -45,9 +41,11 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
  * Scrolling up/down snaps to the next/previous card.
  * A FloatingActionButton at the bottom-right toggles between Portrait and Landscape orientations.
  */
+
 @Composable
 fun ContactCardsScreen(
     modifier: Modifier = Modifier,
+    onNavigateToEdit: (cardId: Long) -> Unit = {},
     viewModel: ContactCardsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -56,74 +54,81 @@ fun ContactCardsScreen(
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
     val activity = context.findActivity()
 
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-    ) {
-        when {
-            uiState.isLoading -> {
-                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-            }
-            uiState.cards.isEmpty() -> {
-                EmptyCardsState(
-                    onAddSample = { viewModel.addSampleCard() },
-                    modifier = Modifier.align(Alignment.Center)
-                )
-            }
-            else -> {
-                val pagerState = rememberPagerState { uiState.cards.size }
-
-                // Fullscreen Vertical Pager: shows each card individually, scroll to view next
-                VerticalPager(
-                    state = pagerState,
-                    modifier = Modifier.fillMaxSize()
-                ) { page ->
-                    val card = uiState.cards[page]
-                    ContactCardItem(card = card)
+    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+        Box(
+            modifier = modifier
+                .padding(innerPadding)
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+        ) {
+            when {
+                uiState.isLoading -> {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                 }
 
-                // Page Indicator Badge at Top-Center
-                Surface(
-                    modifier = Modifier
-                        .align(Alignment.TopCenter)
-                        .padding(top = 16.dp),
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
-                    shadowElevation = 4.dp
-                ) {
-                    Text(
-                        text = "${pagerState.currentPage + 1} of ${uiState.cards.size}",
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)
+                uiState.cards.isEmpty() -> {
+                    EmptyCardsState(
+                        onAddSample = { viewModel.addSampleCard() },
+                        modifier = Modifier.align(Alignment.Center)
                     )
                 }
-            }
-        }
 
-        // Bottom-Right Orientation Toggle Button (Portrait <-> Landscape)
-        ExtendedFloatingActionButton(
-            onClick = {
-                activity?.requestedOrientation = if (isLandscape) {
-                    ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-                } else {
-                    ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+                else -> {
+                    val pagerState = rememberPagerState { uiState.cards.size }
+
+                    // Fullscreen Vertical Pager: shows each card individually, scroll to view next
+                    VerticalPager(
+                        state = pagerState,
+                        modifier = Modifier.fillMaxSize()
+                    ) { page ->
+                        val card = uiState.cards[page]
+                        ContactCardItem(card = card, onClick = { cardId ->
+                            onNavigateToEdit(cardId)
+                        })
+                    }
+
+                    // Page Indicator Badge at Top-Center
+                    Surface(
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .padding(top = 16.dp),
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
+                        shadowElevation = 4.dp
+                    ) {
+                        Text(
+                            text = "${pagerState.currentPage + 1} of ${uiState.cards.size}",
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)
+                        )
+                    }
                 }
-            },
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(24.dp),
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.onPrimary,
-            shape = RoundedCornerShape(16.dp)
-        ) {
-            Text(
-                text = if (isLandscape) "Portrait" else "Landscape",
-                fontWeight = FontWeight.Bold,
-                fontSize = 14.sp
-            )
+            }
+
+            // Bottom-Right Orientation Toggle Button (Portrait <-> Landscape)
+            ExtendedFloatingActionButton(
+                onClick = {
+                    activity?.requestedOrientation = if (isLandscape) {
+                        ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                    } else {
+                        ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+                    }
+                },
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(24.dp),
+                containerColor = MaterialTheme.colorScheme.primary,
+                contentColor = MaterialTheme.colorScheme.onPrimary,
+                shape = RoundedCornerShape(16.dp)
+            ) {
+                Text(
+                    text = if (isLandscape) "Portrait" else "Landscape",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 14.sp
+                )
+            }
         }
     }
 }

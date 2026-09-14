@@ -28,16 +28,16 @@ interface VCardDao {
     suspend fun deleteCard(card: VCardEntity): Int
 
     @Query("DELETE FROM vcards WHERE id = :id")
-    suspend fun deleteCardById(id: String): Int
+    suspend fun deleteCardById(id: Long): Int
 
     @Query("DELETE FROM vcards")
     suspend fun deleteAllCards(): Int
 
     @Query("SELECT * FROM vcards WHERE id = :id LIMIT 1")
-    suspend fun getCardById(id: String): VCardEntity?
+    suspend fun getCardById(id: Long): VCardEntity?
 
     @Query("SELECT * FROM vcards WHERE id = :id LIMIT 1")
-    fun getCardByIdFlow(id: String): Flow<VCardEntity?>
+    fun getCardByIdFlow(id: Long): Flow<VCardEntity?>
 
     @Query("SELECT * FROM vcards ORDER BY formattedName COLLATE NOCASE ASC")
     fun getAllCards(): Flow<List<VCardEntity>>
