@@ -20,12 +20,14 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
@@ -35,10 +37,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import com.benatt.businesscards.data.dto.VCardDto
 import com.benatt.businesscards.ui.nfc.NfcSendDialog
 
@@ -47,11 +45,9 @@ import com.benatt.businesscards.ui.nfc.NfcSendDialog
  * Scrolling up/down snaps to the next/previous card.
  * A FloatingActionButton at the bottom-right toggles between Portrait and Landscape orientations.
  */
-
 @Composable
 fun ContactCardsScreen(
     modifier: Modifier = Modifier,
-    onNavigateToEdit: (cardId: Long) -> Unit = {},
     viewModel: ContactCardsViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -61,95 +57,89 @@ fun ContactCardsScreen(
     val activity = context.findActivity()
     var nfcCardToSend by remember { mutableStateOf<VCardDto?>(null) }
 
-    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-        Box(
-            modifier = modifier
-                .padding(innerPadding)
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-        ) {
-            when {
-                uiState.isLoading -> {
-                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-                }
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+    ) {
+        when {
+            uiState.isLoading -> {
+                CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+            }
 
-                uiState.cards.isEmpty() -> {
-                    EmptyCardsState(
-                        onAddSample = { viewModel.addSampleCard() },
-                        modifier = Modifier.align(Alignment.Center)
+            uiState.cards.isEmpty() -> {
+                EmptyCardsState(
+                    onAddSample = { viewModel.addSampleCard() },
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            }
+
+            else -> {
+                val pagerState = rememberPagerState { uiState.cards.size }
+
+                // Fullscreen Vertical Pager: shows each card individually, scroll to view next
+                VerticalPager(
+                    state = pagerState,
+                    modifier = Modifier.fillMaxSize()
+                ) { page ->
+                    val card = uiState.cards[page]
+                    ContactCardItem(
+                        card = card,
+                        onSendNfc = { selectedCard ->
+                            nfcCardToSend = selectedCard
+                        }
                     )
                 }
 
-                else -> {
-                    val pagerState = rememberPagerState { uiState.cards.size }
-
-                    // Fullscreen Vertical Pager: shows each card individually, scroll to view next
-                    VerticalPager(
-                        state = pagerState,
-                        modifier = Modifier.fillMaxSize()
-                    ) { page ->
-                        val card = uiState.cards[page]
-                        ContactCardItem(
-                            card = card,
-                            onClick = { cardId ->
-                                onNavigateToEdit(cardId)
-                            },
-                            onSendNfc = { selectedCard ->
-                                nfcCardToSend = selectedCard
-                            }
-                        )
-                    }
-
-                    // Page Indicator Badge at Top-Center
-                    Surface(
-                        modifier = Modifier
-                            .align(Alignment.TopCenter)
-                            .padding(top = 16.dp),
-                        shape = CircleShape,
-                        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
-                        shadowElevation = 4.dp
-                    ) {
-                        Text(
-                            text = "${pagerState.currentPage + 1} of ${uiState.cards.size}",
-                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)
-                        )
-                    }
+                // Page Indicator Badge at Top-Center
+                Surface(
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .padding(top = 16.dp),
+                    shape = CircleShape,
+                    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.85f),
+                    shadowElevation = 4.dp
+                ) {
+                    Text(
+                        text = "${pagerState.currentPage + 1} of ${uiState.cards.size}",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)
+                    )
                 }
             }
+        }
 
-            // NFC Send Dialog
-            nfcCardToSend?.let { card ->
-                NfcSendDialog(
-                    card = card,
-                    onDismiss = { nfcCardToSend = null }
-                )
-            }
+        // NFC Send Dialog
+        nfcCardToSend?.let { card ->
+            NfcSendDialog(
+                card = card,
+                onDismiss = { nfcCardToSend = null }
+            )
+        }
 
-            // Bottom-Right Orientation Toggle Button (Portrait <-> Landscape)
-            ExtendedFloatingActionButton(
-                onClick = {
-                    activity?.requestedOrientation = if (isLandscape) {
-                        ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
-                    } else {
-                        ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
-                    }
-                },
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(24.dp),
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary,
-                shape = RoundedCornerShape(16.dp)
-            ) {
-                Text(
-                    text = if (isLandscape) "Portrait" else "Landscape",
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 14.sp
-                )
-            }
+        // Bottom-Right Orientation Toggle Button (Portrait <-> Landscape)
+        ExtendedFloatingActionButton(
+            onClick = {
+                activity?.requestedOrientation = if (isLandscape) {
+                    ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+                } else {
+                    ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+                }
+            },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(24.dp),
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary,
+            shape = RoundedCornerShape(16.dp)
+        ) {
+            Text(
+                text = if (isLandscape) "Portrait" else "Landscape",
+                fontWeight = FontWeight.Bold,
+                fontSize = 14.sp
+            )
         }
     }
 }

@@ -72,7 +72,6 @@ import com.benatt.businesscards.R
 fun ContactCardItem(
     card: VCardDto,
     modifier: Modifier = Modifier,
-    onClick: (cardId: Long) -> Unit = {},
     onSendNfc: ((card: VCardDto) -> Unit)? = null
 ) {
     val configuration = LocalConfiguration.current
@@ -82,10 +81,7 @@ fun ContactCardItem(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .padding(16.dp)
-            .clickable(onClick = {
-                onClick(card.id!!)
-            }),
+            .padding(16.dp),
         contentAlignment = Alignment.Center
     ) {
         Card(
@@ -512,7 +508,6 @@ fun generateQrCodeBitmap(
 @Composable
 fun PreviewContactCardItemLandscape() {
     val dto = VCardDto(
-        id = 0,
         uid = "card-123",
         version = "3.0",
         formattedName = "Morgan Lee",
@@ -531,7 +526,6 @@ fun PreviewContactCardItemLandscape() {
 @Composable
 fun PreviewContactCardItem() {
     val dto = VCardDto(
-        id = 0,
         uid = "card-123",
         version = "3.0",
         formattedName = "Morgan Lee",

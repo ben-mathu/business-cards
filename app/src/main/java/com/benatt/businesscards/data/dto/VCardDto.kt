@@ -6,7 +6,6 @@ import java.io.Serializable
  * Data Transfer Object representing a vCard (electronic business card) based on RFC 2426 / RFC 6350.
  */
 data class VCardDto(
-    val id: Long? = null,
     val uid: String? = null,
     val version: String = "3.0",
     val formattedName: String = "",

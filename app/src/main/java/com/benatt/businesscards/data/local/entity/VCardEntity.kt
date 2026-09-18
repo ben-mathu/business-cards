@@ -29,9 +29,8 @@ import java.util.UUID
     ]
 )
 data class VCardEntity(
-    @PrimaryKey(autoGenerate = true)
-    val id: Long? = null,
-    val uid: String = UUID.randomUUID().toString(),
+    @PrimaryKey
+    val id: String = UUID.randomUUID().toString(),
     val version: String = "3.0",
     val formattedName: String = "",
     val familyName: String? = null,
@@ -76,8 +75,7 @@ data class VCardEntity(
      */
     fun toDto(): VCardDto {
         return VCardDto(
-            id = id,
-            uid = uid,
+            uid = id,
             version = version,
             formattedName = formattedName,
             name = if (familyName != null || givenName != null || middleName != null || prefix != null || suffix != null) {
@@ -128,7 +126,7 @@ data class VCardEntity(
         fun fromDto(dto: VCardDto, rawVcf: String? = null): VCardEntity {
             val now = System.currentTimeMillis()
             return VCardEntity(
-                uid = dto.uid?.ifBlank { null } ?: UUID.randomUUID().toString(),
+                id = dto.uid?.ifBlank { null } ?: UUID.randomUUID().toString(),
                 version = dto.version,
                 formattedName = dto.displayName,
                 familyName = dto.name?.familyName,
