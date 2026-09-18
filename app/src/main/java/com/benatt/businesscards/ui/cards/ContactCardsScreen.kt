@@ -36,6 +36,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import com.benatt.businesscards.data.dto.VCardDto
+import com.benatt.businesscards.ui.nfc.NfcSendDialog
+
 /**
  * Screen displaying contact cards one by one using a vertical pager.
  * Scrolling up/down snaps to the next/previous card.
@@ -53,6 +59,7 @@ fun ContactCardsScreen(
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
     val activity = context.findActivity()
+    var nfcCardToSend by remember { mutableStateOf<VCardDto?>(null) }
 
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         Box(
@@ -82,9 +89,15 @@ fun ContactCardsScreen(
                         modifier = Modifier.fillMaxSize()
                     ) { page ->
                         val card = uiState.cards[page]
-                        ContactCardItem(card = card, onClick = { cardId ->
-                            onNavigateToEdit(cardId)
-                        })
+                        ContactCardItem(
+                            card = card,
+                            onClick = { cardId ->
+                                onNavigateToEdit(cardId)
+                            },
+                            onSendNfc = { selectedCard ->
+                                nfcCardToSend = selectedCard
+                            }
+                        )
                     }
 
                     // Page Indicator Badge at Top-Center
@@ -105,6 +118,14 @@ fun ContactCardsScreen(
                         )
                     }
                 }
+            }
+
+            // NFC Send Dialog
+            nfcCardToSend?.let { card ->
+                NfcSendDialog(
+                    card = card,
+                    onDismiss = { nfcCardToSend = null }
+                )
             }
 
             // Bottom-Right Orientation Toggle Button (Portrait <-> Landscape)

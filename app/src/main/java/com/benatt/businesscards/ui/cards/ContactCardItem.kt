@@ -57,6 +57,11 @@ import com.google.zxing.qrcode.QRCodeWriter
 import androidx.core.graphics.set
 import com.benatt.businesscards.data.parser.toVCardString
 
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Icon
+import androidx.compose.ui.res.painterResource
+import com.benatt.businesscards.R
+
 /**
  * Renders an individual contact card.
  * Adapts its layout seamlessly between Portrait and Landscape orientations:
@@ -67,7 +72,8 @@ import com.benatt.businesscards.data.parser.toVCardString
 fun ContactCardItem(
     card: VCardDto,
     modifier: Modifier = Modifier,
-    onClick: (cardId: Long) -> Unit = {}
+    onClick: (cardId: Long) -> Unit = {},
+    onSendNfc: ((card: VCardDto) -> Unit)? = null
 ) {
     val configuration = LocalConfiguration.current
     val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
@@ -99,9 +105,9 @@ fun ContactCardItem(
             )
         ) {
             if (isLandscape) {
-                LandscapeCardContent(card = card, context = context)
+                LandscapeCardContent(card = card, context = context, onSendNfc = onSendNfc)
             } else {
-                PortraitCardContent(card = card, context = context)
+                PortraitCardContent(card = card, context = context, onSendNfc = onSendNfc)
             }
         }
     }
@@ -110,7 +116,8 @@ fun ContactCardItem(
 @Composable
 private fun PortraitCardContent(
     card: VCardDto,
-    context: Context
+    context: Context,
+    onSendNfc: ((card: VCardDto) -> Unit)? = null
 ) {
     Column(
         modifier = Modifier
@@ -164,7 +171,22 @@ private fun PortraitCardContent(
             }
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
+        // Send via NFC Button
+        Spacer(modifier = Modifier.height(14.dp))
+        FilledTonalButton(
+            onClick = { onSendNfc?.invoke(card) },
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_nfc),
+                contentDescription = "Send via NFC",
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Send via NFC")
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -176,7 +198,8 @@ private fun PortraitCardContent(
 @Composable
 private fun LandscapeCardContent(
     card: VCardDto,
-    context: Context
+    context: Context,
+    onSendNfc: ((card: VCardDto) -> Unit)? = null
 ) {
     Row(
         modifier = Modifier
@@ -232,6 +255,21 @@ private fun LandscapeCardContent(
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
                     )
                 }
+            }
+
+            // Send via NFC Button
+            Spacer(modifier = Modifier.height(12.dp))
+            FilledTonalButton(
+                onClick = { onSendNfc?.invoke(card) },
+                shape = RoundedCornerShape(10.dp)
+            ) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_nfc),
+                    contentDescription = "Send via NFC",
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text("Send via NFC", style = MaterialTheme.typography.labelMedium)
             }
         }
 

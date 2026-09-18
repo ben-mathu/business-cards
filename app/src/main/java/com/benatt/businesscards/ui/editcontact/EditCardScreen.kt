@@ -17,6 +17,12 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.benatt.businesscards.ui.cards.ContactCardItem
 
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import com.benatt.businesscards.data.dto.VCardDto
+import com.benatt.businesscards.ui.nfc.NfcSendDialog
+
 /**
  * @author ben-mathu
  * 9/13/26
@@ -27,6 +33,7 @@ fun EditCardScreen(
     onNavigateBack: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    var nfcCardToSend by remember { mutableStateOf<VCardDto?>(null) }
 
     BackHandler(true) {
         onNavigateBack()
@@ -44,9 +51,21 @@ fun EditCardScreen(
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                 }
                 uiState.card != null -> {
-                    ContactCardItem(card = uiState.card!!)
+                    ContactCardItem(
+                        card = uiState.card!!,
+                        onSendNfc = { selectedCard ->
+                            nfcCardToSend = selectedCard
+                        }
+                    )
                 }
                 else -> {}
+            }
+
+            nfcCardToSend?.let { card ->
+                NfcSendDialog(
+                    card = card,
+                    onDismiss = { nfcCardToSend = null }
+                )
             }
         }
     }
