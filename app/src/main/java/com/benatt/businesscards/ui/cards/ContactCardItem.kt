@@ -26,7 +26,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -36,31 +38,30 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.graphics.createBitmap
+import androidx.core.graphics.set
+import androidx.core.net.toUri
+import com.benatt.businesscards.R
 import com.benatt.businesscards.data.dto.EmailDto
 import com.benatt.businesscards.data.dto.OrganizationDto
 import com.benatt.businesscards.data.dto.PhoneDto
 import com.benatt.businesscards.data.dto.PhoneType
 import com.benatt.businesscards.data.dto.VCardDto
 import com.benatt.businesscards.data.dto.VCardNameDto
+import com.benatt.businesscards.data.parser.toVCardString
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.qrcode.QRCodeWriter
-import androidx.core.graphics.set
-import com.benatt.businesscards.data.parser.toVCardString
-
-import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.Icon
-import androidx.compose.ui.res.painterResource
-import com.benatt.businesscards.R
 
 /**
  * Renders an individual contact card.
@@ -299,7 +300,7 @@ private fun ContactDetailsSection(
                 value = phone.number,
                 badge = if (phone.isPrimary) "Primary" else null,
                 onClick = {
-                    val dialIntent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:${phone.number}"))
+                    val dialIntent = Intent(Intent.ACTION_DIAL, "tel:${phone.number}".toUri())
                     context.startActivity(dialIntent)
                 }
             )
@@ -312,7 +313,8 @@ private fun ContactDetailsSection(
                 value = email.address,
                 badge = if (email.isPrimary) "Primary" else null,
                 onClick = {
-                    val emailIntent = Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:${email.address}"))
+                    val emailIntent =
+                        Intent(Intent.ACTION_SENDTO, "mailto:${email.address}".toUri())
                     context.startActivity(emailIntent)
                 }
             )
@@ -326,7 +328,10 @@ private fun ContactDetailsSection(
                     label = addr.type.name,
                     value = formatted,
                     onClick = {
-                        val mapIntent = Intent(Intent.ACTION_VIEW, Uri.parse("geo:0,0?q=${Uri.encode(formatted)}"))
+                        val mapIntent = Intent(
+                            Intent.ACTION_VIEW,
+                            "geo:0,0?q=${Uri.encode(formatted)}".toUri()
+                        )
                         context.startActivity(mapIntent)
                     }
                 )
@@ -340,7 +345,7 @@ private fun ContactDetailsSection(
                 value = web.url,
                 onClick = {
                     val url = if (web.url.startsWith("http")) web.url else "https://${web.url}"
-                    val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                    val browserIntent = Intent(Intent.ACTION_VIEW, url.toUri())
                     context.startActivity(browserIntent)
                 }
             )
@@ -354,7 +359,7 @@ private fun ContactDetailsSection(
                 value = "@${social.username.removePrefix("@")}",
                 onClick = {
                     if (fullUrl.startsWith("http")) {
-                        val socialIntent = Intent(Intent.ACTION_VIEW, Uri.parse(fullUrl))
+                        val socialIntent = Intent(Intent.ACTION_VIEW, fullUrl.toUri())
                         context.startActivity(socialIntent)
                     }
                 }
@@ -460,20 +465,19 @@ private fun QRCodeImage(
             ),
         contentAlignment = Alignment.Center
     ) {
-        qrBitmap?.let { bitmap ->
+        if (qrBitmap != null)
             Image(
-                bitmap = bitmap.asImageBitmap(),
+                bitmap = qrBitmap.asImageBitmap(),
                 contentDescription = "QR Code for $text",
                 modifier = Modifier.size(size.dp)
             )
-        }
-//        ImageBitmap(size, size)
-//        Text(
-//            text = initials,
-//            color = Color.White,
-//            fontSize = (size * 0.4).sp,
-//            fontWeight = FontWeight.Bold
-//        )
+        else
+            Text(
+                text = initials,
+                color = Color.White,
+                fontSize = (size * 0.4).sp,
+                fontWeight = FontWeight.Bold
+            )
     }
 }
 

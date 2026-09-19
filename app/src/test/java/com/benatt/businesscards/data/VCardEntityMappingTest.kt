@@ -8,7 +8,6 @@ import com.benatt.businesscards.data.dto.VCardDto
 import com.benatt.businesscards.data.dto.VCardNameDto
 import com.benatt.businesscards.data.local.entity.VCardEntity
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNotNull
 import org.junit.Test
 
 class VCardEntityMappingTest {

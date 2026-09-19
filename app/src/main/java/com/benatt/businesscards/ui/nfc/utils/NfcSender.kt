@@ -3,16 +3,10 @@ package com.benatt.businesscards.ui.nfc.utils
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.nfc.FormatException
 import android.nfc.NdefMessage
 import android.nfc.NdefRecord
 import android.nfc.NfcAdapter
-import android.nfc.Tag
-import android.nfc.TagLostException
-import android.nfc.tech.Ndef
-import android.nfc.tech.NdefFormatable
 import android.provider.Settings
-import java.io.IOException
 
 sealed class NfcSendResult {
     data object Success : NfcSendResult()
@@ -65,92 +59,95 @@ object NfcSender {
         return NfcSendResult.Success
     }
 
-    fun writeNdefToTag(tag: Tag, message: NdefMessage): NfcSendResult {
-        val messageBytes = message.byteArrayLength
-        val ndef = Ndef.get(tag)
+//    fun writeNdefToTag(tag: Tag, message: NdefMessage): NfcSendResult {
+//        val messageBytes = message.byteArrayLength
+//        val ndef = Ndef.get(tag)
+//
+//        if (ndef != null) {
+//            return try {
+//                ndef.connect()
+//                if (!ndef.isWritable) {
+//                    NfcSendResult.TagReadOnly
+//                } else if (ndef.maxSize < messageBytes) {
+//                    NfcSendResult.InsufficientCapacity(
+//                        requiredBytes = messageBytes,
+//                        maxBytes = ndef.maxSize
+//                    )
+//                } else {
+//                    ndef.writeNdefMessage(message)
+//                    NfcSendResult.Success
+//                }
+//            } catch (e: TagLostException) {
+//                Log.e(TAG, "writeNdefToTag -> Error", e)
+//                NfcSendResult.TagLost
+//            } catch (e: FormatException) {
+//                NfcSendResult.Error("Tag format error: ${e.localizedMessage ?: "Invalid format"}")
+//            } catch (e: IOException) {
+//                NfcSendResult.Error("I/O error communicating with tag: ${e.localizedMessage ?: "Connection error"}")
+//            } catch (e: Exception) {
+//                NfcSendResult.Error(e.localizedMessage ?: "Failed to write NFC tag")
+//            } finally {
+//                try {
+//                    ndef.close()
+//                } catch (_: Exception) {}
+//            }
+//        }
+//
+//        val formatable = NdefFormatable.get(tag)
+//        if (formatable != null) {
+//            return try {
+//                formatable.connect()
+//                formatable.format(message)
+//                NfcSendResult.Success
+//            } catch (e: TagLostException) {
+//                Log.e(TAG, "writeNdefToTag -> Error", e)
+//                NfcSendResult.TagLost
+//            } catch (e: FormatException) {
+//                NfcSendResult.Error("Format error: ${e.localizedMessage ?: "Cannot format tag"}")
+//            } catch (e: IOException) {
+//                NfcSendResult.Error("I/O error formatting tag: ${e.localizedMessage ?: "Connection error"}")
+//            } catch (e: Exception) {
+//                NfcSendResult.Error(e.localizedMessage ?: "Failed to format tag")
+//            } finally {
+//                try {
+//                    formatable.close()
+//                } catch (_: Exception) {}
+//            }
+//        }
+//
+//        return NfcSendResult.Error("Tag does not support NDEF formatting.")
+//    }
 
-        if (ndef != null) {
-            return try {
-                ndef.connect()
-                if (!ndef.isWritable) {
-                    NfcSendResult.TagReadOnly
-                } else if (ndef.maxSize < messageBytes) {
-                    NfcSendResult.InsufficientCapacity(
-                        requiredBytes = messageBytes,
-                        maxBytes = ndef.maxSize
-                    )
-                } else {
-                    ndef.writeNdefMessage(message)
-                    NfcSendResult.Success
-                }
-            } catch (e: TagLostException) {
-                NfcSendResult.TagLost
-            } catch (e: FormatException) {
-                NfcSendResult.Error("Tag format error: ${e.localizedMessage ?: "Invalid format"}")
-            } catch (e: IOException) {
-                NfcSendResult.Error("I/O error communicating with tag: ${e.localizedMessage ?: "Connection error"}")
-            } catch (e: Exception) {
-                NfcSendResult.Error(e.localizedMessage ?: "Failed to write NFC tag")
-            } finally {
-                try {
-                    ndef.close()
-                } catch (_: Exception) {}
-            }
-        }
-
-        val formatable = NdefFormatable.get(tag)
-        if (formatable != null) {
-            return try {
-                formatable.connect()
-                formatable.format(message)
-                NfcSendResult.Success
-            } catch (e: TagLostException) {
-                NfcSendResult.TagLost
-            } catch (e: FormatException) {
-                NfcSendResult.Error("Format error: ${e.localizedMessage ?: "Cannot format tag"}")
-            } catch (e: IOException) {
-                NfcSendResult.Error("I/O error formatting tag: ${e.localizedMessage ?: "Connection error"}")
-            } catch (e: Exception) {
-                NfcSendResult.Error(e.localizedMessage ?: "Failed to format tag")
-            } finally {
-                try {
-                    formatable.close()
-                } catch (_: Exception) {}
-            }
-        }
-
-        return NfcSendResult.Error("Tag does not support NDEF formatting.")
-    }
-
-    fun startSending(
-        activity: Activity,
-        vCardString: String,
-        onResult: (NfcSendResult) -> Unit
-    ) {
-        val adapter = NfcAdapter.getDefaultAdapter(activity) ?: run {
-            onResult(NfcSendResult.Error("NFC is not supported on this device"))
-            return
-        }
-
-        if (!adapter.isEnabled) {
-            onResult(NfcSendResult.Error("NFC is disabled"))
-            return
-        }
-
-        val message = createVCardNdefMessage(vCardString)
-        val flags = NfcAdapter.FLAG_READER_NFC_A or
-                NfcAdapter.FLAG_READER_NFC_B or
-                NfcAdapter.FLAG_READER_NFC_F or
-                NfcAdapter.FLAG_READER_NFC_V or
-                NfcAdapter.FLAG_READER_NO_PLATFORM_SOUNDS
-
-        adapter.enableReaderMode(activity, { tag ->
-            val result = writeNdefToTag(tag, message)
-            activity.runOnUiThread {
-                onResult(result)
-            }
-        }, flags, null)
-    }
+    //TODO: this function starts a nfc listener
+//    fun startSending(
+//        activity: Activity,
+//        vCardString: String,
+//        onResult: (NfcSendResult) -> Unit
+//    ) {
+//        val adapter = NfcAdapter.getDefaultAdapter(activity) ?: run {
+//            onResult(NfcSendResult.Error("NFC is not supported on this device"))
+//            return
+//        }
+//
+//        if (!adapter.isEnabled) {
+//            onResult(NfcSendResult.Error("NFC is disabled"))
+//            return
+//        }
+//
+//        val message = createVCardNdefMessage(vCardString)
+//        val flags = NfcAdapter.FLAG_READER_NFC_A or
+//                NfcAdapter.FLAG_READER_NFC_B or
+//                NfcAdapter.FLAG_READER_NFC_F or
+//                NfcAdapter.FLAG_READER_NFC_V or
+//                NfcAdapter.FLAG_READER_NO_PLATFORM_SOUNDS
+//
+//        adapter.enableReaderMode(activity, { tag ->
+//            val result = writeNdefToTag(tag, message)
+//            activity.runOnUiThread {
+//                onResult(result)
+//            }
+//        }, flags, null)
+//    }
 
     fun stopSending(activity: Activity) {
         val adapter = NfcAdapter.getDefaultAdapter(activity) ?: return
