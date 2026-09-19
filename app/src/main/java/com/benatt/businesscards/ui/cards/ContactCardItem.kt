@@ -124,7 +124,7 @@ private fun PortraitCardContent(
     ) {
         // Initials Avatar
         QRCodeImage(
-            vCardDetails = card.toVCardString(),
+            vCardDetails = card.copy(photoUri = null, logoUri = null).toVCardString(),
             size = 200
         )
 
@@ -213,7 +213,7 @@ private fun LandscapeCardContent(
             horizontalAlignment = Alignment.Start
         ) {
             QRCodeImage(
-                vCardDetails = card.toVCardString(),
+                vCardDetails = card.copy(photoUri = null, logoUri = null).toVCardString(),
                 size = 150
             )
 

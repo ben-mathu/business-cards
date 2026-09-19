@@ -24,7 +24,7 @@ sealed class NfcSendResult {
 
 object NfcSender {
 
-    const val MAX_NFC_BYTES = 144
+    const val MAX_NFC_BYTES = 1024
 
     fun calculatePayloadSize(vCardString: String): Int {
         return vCardString.toByteArray(Charsets.UTF_8).size

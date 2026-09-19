@@ -114,7 +114,7 @@ fun ContactCardsScreen(
         // NFC Send Dialog
         nfcCardToSend?.let { card ->
             NfcSendDialog(
-                card = card,
+                card = card.copy(photoUri = null, logoUri = null),
                 onDismiss = { nfcCardToSend = null }
             )
         }
