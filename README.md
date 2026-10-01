@@ -116,16 +116,3 @@ val cardsFlow = vCardDao.getAllCards()
 // Live contact search
 val searchFlow = vCardDao.searchCards(searchQuery)
 ```
-
----
-
-## Frequently Asked Questions
-
-### Will other applications be able to share `.vcf` files with this app?
-**Yes.** The intent filter configured in `AndroidManifest.xml` registers the app with Android's system resolver:
-- `ACTION_SEND` with mime types `text/vcard`, `text/x-vcard`, and `text/directory` allows your app to appear in the **Android Sharesheet** whenever another app (Contacts, WhatsApp, Telegram, etc.) shares a contact or `.vcf` file. This eliminates the need for `READ_CONTACTS` permission while allowing users to import contacts voluntarily.
-
-### Should I remove the launcher (`<category android:name="android.intent.category.LAUNCHER" />`)?
-**No, do not remove the launcher.**
-1. **App Discoverability**: The `LAUNCHER` category is what places the app icon on the user's home screen and in the app drawer. If removed, the user will have no way to open the app directly to view their saved cards, search contacts, or manage settings.
-2. **Independent Intent Filters**: In Android, activities can have multiple `<intent-filter>` blocks. The `MAIN / LAUNCHER` filter handles user launches from the home screen, while the `SEND` and `VIEW` filters handle external shares. They do not interfere with each other.
